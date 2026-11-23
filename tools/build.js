@@ -6,7 +6,7 @@ const dist = path.join(__dirname, "..", "dist");
 
 const clean = (s) => s.replace(/^\uFEFF/, "");
 const css = clean(fs.readFileSync(path.join(app, "app.css"), "utf8"));
-const order = ["pdfread.js", "classify.js", "import.js", "data/data.js", "bootstrap.js", "engine.js", "app.js", "pwa.js", "vk.js"];
+const order = ["pdfread.js", "classify.js", "demo-data.js", "import.js", "data/data.js", "bootstrap.js", "engine.js", "app.js", "pwa.js", "vk.js"];
 const js = {};
 for (const f of order) js[f] = clean(fs.readFileSync(path.join(app, f), "utf8"));
 

@@ -431,7 +431,7 @@ function pageImport() {
     </div>
     <div class="filters" style="margin-top:14px">
       <button class="btn" data-act="pick-file">Загрузить другой файл</button>
-      <button class="btn ghost" data-act="reset-data" style="color:#dbe7e1;border-color:#3c6b5f">Вернуть демо-данные</button>
+      <button class="btn ghost" data-act="reset-data" style="color:#dbe7e1;border-color:#3c6b5f">Очистить данные</button>
     </div>
   </div>` : ""}
 
@@ -447,6 +447,7 @@ function pageImport() {
     </div>
     <div class="filters" style="justify-content:center;margin-top:14px">
       <button class="btn" data-act="pick-file">Выбрать PDF</button>
+      ${demo && window.__DEMO ? '<button class="btn ghost" data-act="try-demo">Посмотреть на примере</button>' : ""}
     </div>
     <div class="t-small t-muted" id="importStatus" style="margin-top:12px;min-height:18px">${demo ? "файл ещё не загружен" : "выберите второй файл, чтобы объединить банки"}</div>
     <input type="file" id="fileInput" accept="application/pdf,.pdf" hidden>
@@ -1004,7 +1005,10 @@ function pageOverview() {
   const labels = mActive.map(mm => MONTHS_RU[+mm.slice(5) - 1] + (mm.slice(5) === "01" || mm === mActive[0] ? " " + mm.slice(2, 4) : ""));
   const recsTop = RECS().slice(0, 3);
 
+  const isDemo = (function () { try { return localStorage.getItem("fin.demo.v1") === "1"; } catch (e) { return false; } })();
   return `
+  ${isDemo ? note(`Это <b>демонстрационные данные</b>: операции выдуманы, чтобы показать, как всё выглядит.
+    Загрузите свою выписку — раздел «Загрузить выписку» — и увидите свои цифры.`, "grey", "ⓘ") : ""}
   ${periodNote()}
 
   <div class="section" style="margin-top:16px">
@@ -2670,6 +2674,23 @@ function pageHelp() {
   </div>`;
 }
 
+/* Согласие с политикой конфиденциальности — требование п. 1.1.4 правил VK Mini Apps:
+   пользователь должен принять документы до начала использования приложения. */
+function maybeConsent() {
+  var done = null;
+  try { done = localStorage.getItem("fin.consent.v1"); } catch (e) { }
+  if (done || document.getElementById("consent")) return;
+  var bar = document.createElement("div");
+  bar.id = "consent";
+  bar.className = "consent";
+  bar.innerHTML = '<div class="consent-x">Файл выписки обрабатывается только в вашем браузере и никуда не отправляется. ' +
+    'Продолжая, вы принимаете <a class="link" href="https://github.com/rallkololo-prog/finansovyj-konsultant/blob/main/PRIVACY.md" ' +
+    'target="_blank" rel="noopener">политику конфиденциальности</a> и ' +
+    '<a class="link" href="https://github.com/rallkololo-prog/finansovyj-konsultant/blob/main/TERMS.md" target="_blank" rel="noopener">пользовательское соглашение</a>.</div>' +
+    '<button class="btn" data-act="consent-ok">Понятно</button>';
+  document.body.appendChild(bar);
+}
+
 function render(keepScroll) {
   if (!HAS_DATA && state.page !== "import" && state.page !== "help") state.page = "import";
   try { renderChrome(); } catch (e) { window.__err2 = (e && (e.stack || e.message)) || String(e); console.error(e); }
@@ -2688,6 +2709,7 @@ function render(keepScroll) {
   }
   try { labelTables(view); } catch (e) { }
   try { renderMobileNav(); } catch (e) { }
+  try { maybeConsent(); } catch (e) { }
   if (!keepScroll) window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   if (state.page === "scen") bindScen();
   if (state.page === "tx") bindTx();
@@ -2731,8 +2753,20 @@ function onAction(e) {
   else if (act === "go-savings") { state.page = "savings"; render(); }
   else if (act === "go-data") { state.page = "data"; render(); }
   else if (act === "pick-file") { const f = document.getElementById("fileInput"); if (f) f.click(); }
+  else if (act === "try-demo") {
+    if (!window.__DEMO) return;
+    try {
+      localStorage.setItem("fin.dataset.v1", JSON.stringify(window.__DEMO));
+      localStorage.setItem("fin.demo.v1", "1");
+    } catch (e) { }
+    location.reload();
+  }
+  else if (act === "consent-ok") {
+    try { localStorage.setItem("fin.consent.v1", new Date().toISOString().slice(0, 10)); } catch (e) { }
+    const c = document.getElementById("consent"); if (c) c.remove();
+  }
   else if (act === "reset-data") {
-    if (confirm("Вернуть демонстрационные данные и удалить загруженную выписку?")) {
+    if (confirm("Удалить загруженные данные из браузера? Приложение вернётся к пустому экрану.")) {
       try { localStorage.removeItem("fin.dataset.v1"); } catch (e) { }
       location.reload();
     }
