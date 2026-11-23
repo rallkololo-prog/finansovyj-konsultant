@@ -1,7 +1,7 @@
 /* Service worker: приложение работает офлайн.
    Стратегия простая — «сначала кэш, в фоне обновляем».
    При изменении приложения поднимайте VERSION, иначе телефон останется на старой версии. */
-const VERSION = "fin-2026-11-23-2";
+const VERSION = "fin-2026-11-23-3";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
