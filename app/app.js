@@ -437,7 +437,7 @@ function pageImport() {
     <div class="drop-banks">
       <span class="bk ok">Т-Банк</span>
       <span class="bk ok">Сбер</span>
-      <span class="bk no">другие банки — пока нет</span>
+      <span class="bk no">другие банки — скоро</span>
     </div>
     <div class="filters" style="justify-content:center;margin-top:14px">
       <button class="btn" data-act="pick-file">Выбрать PDF</button>
