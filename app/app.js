@@ -4,6 +4,23 @@
 
 const F = window.FIN;
 const M = F.meta;
+/* ---------------------------------------------------------------
+   Платные функции: пока выключены. Включать только вместе с VK Pay / оплатой
+   на платформах vk.ru и m.vk.ru, и помнить про правило 5.4.1 — в мобильных
+   приложениях iOS/Android интерфейса оплаты быть не должно.
+   canSell() — единственное место, где проверяется, можно ли вообще показывать оплату.
+   --------------------------------------------------------------- */
+const PRO = {
+  enabled: false,      // станет true, когда появятся платные функции и серверная проверка оплаты
+  trialDays: 0,        // пробный период, если основная функциональность станет платной (правило 5.4.3)
+  priceLabel: ""       // «99 ₽ в месяц» — текст, который увидит пользователь
+};
+function canSell() {
+  const p = window.VKCTX || {};
+  if (!PRO.enabled || !PRO.priceLabel) return false;
+  return !p.isMobileApp;   // iOS/Android: оплаты не показываем
+}
+
 const HAS_DATA = !!(F.tx && F.tx.length);
 const nf = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
 const nf2 = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 });

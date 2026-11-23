@@ -1859,6 +1859,23 @@ window.FIN={"meta":{"categories":["Продукты","Кофе и фастфуд
 
 const F = window.FIN;
 const M = F.meta;
+/* ---------------------------------------------------------------
+   Платные функции: пока выключены. Включать только вместе с VK Pay / оплатой
+   на платформах vk.ru и m.vk.ru, и помнить про правило 5.4.1 — в мобильных
+   приложениях iOS/Android интерфейса оплаты быть не должно.
+   canSell() — единственное место, где проверяется, можно ли вообще показывать оплату.
+   --------------------------------------------------------------- */
+const PRO = {
+  enabled: false,      // станет true, когда появятся платные функции и серверная проверка оплаты
+  trialDays: 0,        // пробный период, если основная функциональность станет платной (правило 5.4.3)
+  priceLabel: ""       // «99 ₽ в месяц» — текст, который увидит пользователь
+};
+function canSell() {
+  const p = window.VKCTX || {};
+  if (!PRO.enabled || !PRO.priceLabel) return false;
+  return !p.isMobileApp;   // iOS/Android: оплаты не показываем
+}
+
 const HAS_DATA = !!(F.tx && F.tx.length);
 const nf = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
 const nf2 = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 });
@@ -4852,6 +4869,17 @@ render();
 
   var q = new URLSearchParams(location.search);
   var inVK = q.has("vk_app_id") || q.has("vk_user_id") || q.has("vk_platform");
+
+  /* Платформа запуска: понадобится, если появятся платные функции.
+     Правила VK Mini Apps (п. 5.4.1): оплата цифровых ценностей разрешена только
+     в vk.ru и m.vk.ru; в мобильных приложениях для iOS и Android кнопок оплаты быть не должно. */
+  var platform = q.get("vk_platform") || "web";
+  window.VKCTX = {
+    inVK: inVK,
+    platform: platform,
+    isMobileApp: /iphone|ipad|android/i.test(platform),
+    isIOS: /iphone|ipad/i.test(platform)
+  };
   var inFrame = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
 
   // Внутри ВК и Telegram страница живёт в webview: сообщаем CSS, что мы во фрейме

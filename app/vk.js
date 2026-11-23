@@ -6,6 +6,17 @@
 
   var q = new URLSearchParams(location.search);
   var inVK = q.has("vk_app_id") || q.has("vk_user_id") || q.has("vk_platform");
+
+  /* Платформа запуска: понадобится, если появятся платные функции.
+     Правила VK Mini Apps (п. 5.4.1): оплата цифровых ценностей разрешена только
+     в vk.ru и m.vk.ru; в мобильных приложениях для iOS и Android кнопок оплаты быть не должно. */
+  var platform = q.get("vk_platform") || "web";
+  window.VKCTX = {
+    inVK: inVK,
+    platform: platform,
+    isMobileApp: /iphone|ipad|android/i.test(platform),
+    isIOS: /iphone|ipad/i.test(platform)
+  };
   var inFrame = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
 
   // Внутри ВК и Telegram страница живёт в webview: сообщаем CSS, что мы во фрейме
