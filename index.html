@@ -987,7 +987,6 @@ html.embedded body{padding-bottom:0}
     ["Доставка еды", "yandex\\*eda|eda\\.yandex|delivery club|edarit|яндекс еда|yamiyami|tokyo-city|sushiwok|dodopizza|додо пицц"],
     ["Табак", "tabak|табак|mostabak|nikotin|никотин|iqos|vape|вейп|smoke\\b|смок|сигарет"],
     ["Продукты", "magnit|магнит|перекрест|перекрёст|perekrest|perekryostok|pyaterochka|пятероч|пятёроч|dixy|дикс|lenta|лента|fixprice|fix price|samokat|самокат|лавка|lavka|sp_market|supermarket|universam|универсам|ашан|auchan|okey|окей|вкусвилл|vkusvill|krasnoe&beloe|красное&белое|магазин|magazin|magaz\\b|продукт|produkty|frukty|фрукты|ovosh|овощ|мясо|myaso|рыба|ryba|kulinariya|кулинария|delikates|dachny|s2b|pavilon|павильон|galamart|best price|vse ot|1001 meloch|vernyj|верный|minuta market|domovoy|домовой|izba|белорусск|belorusskij|lepta|savva|kontinent|spp |sp_|зоотовар|zootovary|petshop|yumamart|puri guli|puriguli|sukhofrukty|сухофрукт|vitamin|market\\b|spp\\b|fiolent|stachek|шаурм|нужно|spetsialitety|специалитет|domashn|домашн|fermer|фермер|ptits|птиц|kolbаs|колбас|syr\\b|сыр"],
-    ["Кофе и фастфуд", "mrblack|black coffee|coffee|кофе|coffe|cafe\\b|kafe|кафе|kfc|burger|бургер|rostics|ростикс|dodo|pizza|пицца|papa grill|shaverma|шаверма|шаурма|shaurma|shaverm|teremok|теремок|subway|vkusnoitochka|вкусно|qsr|beggins|baggins|one price|dunot|donuts|bulochnaya|булочная|pekarn|пекарн|bakery|zernyshkin|khlebnik|хлеб|prozharka|kebab|кебаб|манты|manty|суши|sushi|wok|shashlyk|шашлык|ketch|cekh 85|pita|pitaf|pitafoud|taiyaki|kimchi|lyudi lyub|konditersk|кондитер|vypechka|выпечк|blin|блин|chaynaya|чайная|napitki|напитк|\\beda\\b|еда\\b|food|fud |sma(jl|il)|strit fud|restoran|restaurant|bistro|столовая|stolovaya|garage|kruchu|meat fusion|bbq|afonya|piter perv|potemkinskaya|chuck|miteriya|kukhnya|кухня|rusalka|plovdiv|dostaevsky|khard koin|perepе4ki|perepe4ki|просто вася|prosto vasya|гунфу|gongfu|sha(u)?rm|хинкал|khinkal|пхали|хачапур|чебурек|самса|narez|булоч|chuck|kyami|kiyameev|faraon|мu-mu|mu-mu|столовая|vkus\\b"],
     ["Такси и каршеринг", "yandex\\*go|yandexgo|ym\\*go|яндекс go|yandex\\.drive|yandex drive|citydrive|ситидрайв|делимобиль|delimobil|belka car|такси"],
     ["Кикшеринг", "whoosh|юш|yandex\\*yandex\\.scooter|yandex\\.scooter|scooter"],
     ["Транспорт", "метро\\b|подорожник|тройка|troika|gorelektrotrans|gor elektrotrans|электротранспорт|ржд\\b|rzd|автобус|троллейбус|трамвай|transport|транспорт"],
@@ -1050,11 +1049,7 @@ const EXTRA_RULES = [
     ["сервисы яндекса|yandex\\.plus", "Яндекс Плюс"], ["yota", "Yota"], ["beeline|билайн", "Билайн"],
     ["мобильная карта", "ЦУПИС (НКО Мобильная карта)"], ["лига ставок", "Лига Ставок"],
     ["apteka|аптека|zdorov", "Аптека"], ["maxidom", "MAXIDOM"], ["sofa collection", "Sofa Collection"],
-    ["teterina", "ИП Тетерина"], ["mitrofanov", "ИП Митрофанов"], ["glukhova", "Глухова Е.М."],
-    ["shvecova", "Швецова Мурад"], ["akhmedova", "ИП Ахмедова"], ["sadygov", "Садыгов Турал"],
-    ["liflyandiya", "Лифляндия"], ["plovdiv", "Пловдив"], ["khard koin", "Hard Coin"],
-    ["rusalka", "Русалка"], ["perepе4ki|perepe4ki", "Перепечки"], ["kukhn", "Кухня"],
-    ["zero|zernyshkin", "Зернышкин"], ["khlebnik", "Хлебник"], ["pekarn|пекарн", "Пекарня"],
+  ["kukhn", "Кухня"], ["pekarn|пекарн", "Пекарня"],
     ["kinoteatr|кинотеатр", "Кинотеатр"], ["muzej|музей|erarta", "Музей"],
     ["yandex\\.drive|yandex drive", "Яндекс Драйв"], ["cvety|цветы", "Цветы"],
     ["pravka|prachka|прачеч", "Прачечная"], ["wildberries", "Wildberries"],
@@ -2668,59 +2663,11 @@ function servicesList(b) {
 
 /* ------------------------------ непонятные траты ------------------------------ */
 const UNKNOWN_INFO = {
-  "ИП Тетерина": {
-    find: "ИП Тетерина Ольга Сергеевна, ИНН 772825082065, ОГРНИП 325784700073790, СПб, зарегистрирован 05.03.2025.",
-    oks: "Основной ОКВЭД 96.09 — прочие персональные услуги; дополнительно 55.20 (краткосрочное проживание), 68.20 (аренда), 85.41.9 (доп. образование).",
-    verdict: "Это не магазин: похоже на услуги — занятия, аренда или бытовые услуги. Точнее по выписке не определить.",
-    suggest: ["Образование", "Прочее"], url: "https://www.rusprofile.ru/ip/325784700073790",
-  },
-  "ИП Тетерина_P_QR": {
-    find: "Тот же ИП Тетерина О. С., но оплата по QR-коду.",
-    oks: "ОКВЭД 96.09 — прочие персональные услуги.",
-    verdict: "Ежемесячные платежи по QR одному ИП — типичный признак занятий или аренды. Похоже на регулярную услугу.",
-    suggest: ["Образование", "Прочее"], url: "https://www.rusprofile.ru/ip/325784700073790",
-  },
-  "ИП Митрофанов": {
-    find: "ИП Митрофанов Владимир Александрович, ИНН 782607330557, ОГРНИП 319784700212350, Кронштадт.",
-    oks: "ОКВЭД 96.09 (персональные услуги), 43.22 (сантехнические работы), 47.76.2 (торговля животными и кормами).",
-    verdict: "Скорее всего зоотовары/корм или бытовые услуги — но однозначно из выписки не следует.",
-    suggest: ["Питомцы", "Прочее"], url: "https://www.rusprofile.ru/ip/319784700212350",
-  },
-  "Глухова Е.М.": {
-    find: "ИП Глухова Марина Юрьевна, ИНН 781418968303, ОГРНИП 325784700163196 (прекратила деятельность 16.11.2026).",
-    oks: "ОКВЭД 56.10 — деятельность ресторанов и доставка продуктов питания.",
-    verdict: "Это общепит/доставка еды. Логично отнести к «Кофе и фастфуд» или «Доставка еды».",
-    suggest: ["Кофе и фастфуд", "Доставка еды"], url: "https://www.rusprofile.ru/ip/325784700163196",
-  },
-  "Kopchenye Kosti": {
-    find: "«Копчёные Кости & BBQ Territory» — барбекю-ресторан в Гатчине, ул. Радищева, 6А.",
-    oks: "Общепит.",
-    verdict: "Это ресторан. Смело относим к «Кофе и фастфуд».",
-    suggest: ["Кофе и фастфуд"], url: "https://2gis.ru/gatchina/firm/70000001046805175",
-  },
   "Аеза": {
     find: "Aéza (aeza.ru) — российский хостинг VPS и выделенных серверов.",
     oks: "—",
     verdict: "Цифровой сервис с ежемесячной оплатой — это подписка, а не «прочее».",
     suggest: ["Подписки и сервисы"], url: "https://aeza.ru",
-  },
-  "Spektr": {
-    find: "SPEKTR (spektr-opt.ru, СПб) — тросовые и крепёжные системы оптом.",
-    oks: "—",
-    verdict: "Стройматериалы и крепёж. Похоже на ремонт или хозтовары.",
-    suggest: ["Дом и ремонт"], url: "https://spektr-opt.ru",
-  },
-  "Nasha Set Sever": {
-    find: "ООО «Наша Сеть Север», ИНН 7806235184.",
-    oks: "Торговля табачными изделиями.",
-    verdict: "Табачный магазин — это категория «Табак».",
-    suggest: ["Табак"], url: "https://www.rusprofile.ru/id/7806235184",
-  },
-  "Садыгов Турал": {
-    find: "ИП Садыгов Турал Гаштаги Оглы, ИНН 783901555356, ОГРНИП 320470400052629.",
-    oks: "Вид деятельности по открытым данным не раскрыт.",
-    verdict: "Определить не удалось. 12 платежей по 300–700 ₽ — похоже на услуги или мелкие покупки.",
-    suggest: ["Прочее", "Кофе и фастфуд"], url: "https://www.rusprofile.ru/ip/320470400052629",
   },
 };
 
@@ -3870,7 +3817,7 @@ function pageProfile() {
         </div>
         <div>
           ${note(`Нераспознанные операции (${p.uncategorized_share}%) — это магазины с непонятными названиями
-            вроде «ИП Тетерина». Они честно исключены из выводов по категориям, а не разложены наугад.`, "grey", "ⓘ")}
+            вроде «ИП Иванов». Они честно исключены из выводов по категориям, а не разложены наугад.`, "grey", "ⓘ")}
         </div>
       </div>
     </div>
