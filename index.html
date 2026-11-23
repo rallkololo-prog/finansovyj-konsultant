@@ -2087,9 +2087,15 @@ function svgBars(values, labels, o) {
       <title>${labels[i]}: ${money(v)}</title></rect>`;
   });
   let ticks = "";
-  const step = Math.ceil(n / 12);
+  // на узком экране подписи сливаются: показываем каждую N-ю, последнюю — только если она не липнет к предыдущей
+  const step = n <= 8 ? 1 : n <= 14 ? 2 : 3;
+  let lastShown = -99;
   labels.forEach((lb, i) => {
-    if (i % step === 0 || i === n - 1) ticks += `<text x="${(pl + i * (w - pl - pr) / n + (w - pl - pr) / n / 2).toFixed(1)}" y="${h - 7}" text-anchor="middle">${lb}</text>`;
+    const isLast = i === n - 1;
+    if (i % step !== 0 && !isLast) return;
+    if (isLast && i - lastShown < step) return;
+    lastShown = i;
+    ticks += `<text x="${(pl + i * (w - pl - pr) / n + (w - pl - pr) / n / 2).toFixed(1)}" y="${h - 7}" text-anchor="middle">${lb}</text>`;
   });
   return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img">${grid}${bars}${ticks}</svg>`;
 }
@@ -2171,7 +2177,7 @@ function srcFrom(srcId) {
 
 function lastBetDate() {
   const iso = (F.tx || []).filter(t => M.categories[t[5]] === "Ставки и азартные игры").map(t => t[0]).sort();
-  return iso.length ? fmtDate(iso[iso.length - 1]) : "—";
+  return iso.length ? fmtDate(iso[iso.length - 1]) : "";
 }
 
 function periodNote() {
