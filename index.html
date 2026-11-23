@@ -3014,7 +3014,9 @@ function pageImprove() {
   const trend = b.brand_trend.filter(r => r.delta > 0).slice(0, 5);
   const subs = b.recurring.slice(0, 6);
   const an = b.anomalies.slice(0, 6);
-  const y2026 = F.years["2026"], y2025 = F.years["2025"];
+  const YR = F.years || {};
+  const y2026 = YR["2026"] || YR[Object.keys(YR).sort().pop()] || { spend: 0, cnt: 0 };
+  const y2025 = YR["2025"] || { spend: 0, cnt: 0 };
 
   return `
   ${shortPeriod() ? note(`Выбран период всего ${DAYS()} ${DAYS() === 1 ? "день" : "дня"}. Для выводов о привычках этого мало:
@@ -3036,7 +3038,7 @@ function pageImprove() {
       Это математический расчёт: суммы берутся из ваших фактических операций, но никто не гарантирует,
       что сократить расходы удастся ровно на столько. Одна и та же операция не учитывается в двух рекомендациях.
       ${stoppedRecs.length ? `<br><br><b style="color:#dfe9e4">Ставки исключены из потенциала:</b> вы отметили, что больше не играете
-      (последнее списание ${lastBetDate()}), поэтому ${stoppedRecs.map(r => money(r.save_year)).join(", ")} в год сюда не входят —
+      (${lastBetDate() ? "последнее списание " + lastBetDate() : "ставок в выписке нет"}), поэтому ${stoppedRecs.map(r => money(r.save_year)).join(", ")} в год сюда не входят —
       экономить на том, что уже прекратилось, нельзя.` : ""}
     </div>
   </div>
@@ -3966,8 +3968,14 @@ function openModal(title, sub, bodyHtml) {
   document.getElementById("modalSub").textContent = sub || "";
   document.getElementById("modalBody").innerHTML = bodyHtml;
   document.getElementById("modal").hidden = false;
+  try { history.pushState({ ui: "modal" }, ""); } catch (e) { }
 }
-function closeModal() { document.getElementById("modal").hidden = true; }
+function closeModal(fromHistory) {
+  document.getElementById("modal").hidden = true;
+  if (!fromHistory && history.state && history.state.ui === "modal") {
+    try { history.back(); } catch (e) { }
+  }
+}
 
 function idsForCat(cat) {
   return F.tx.map((t, i) => i).filter(i => M.categories[F.tx[i][5]] === cat && F.tx[i][3] < 0);
@@ -4399,6 +4407,7 @@ function openDrawer() {
     d.id = "drawer";
     d.className = "drawer";
     document.body.appendChild(d);
+    try { history.pushState({ ui: "drawer" }, ""); } catch (e) { }
   }
   const badges = (typeof navBadges === "function" ? navBadges() : {}) || {};
   d.innerHTML = `
@@ -4415,11 +4424,26 @@ function openDrawer() {
   document.body.classList.add("drawer-open");
 }
 
-function closeDrawer() {
+function closeDrawer(fromHistory) {
   const d = document.getElementById("drawer");
   if (d) d.remove();
   document.body.classList.remove("drawer-open");
+  if (!fromHistory && history.state && history.state.ui === "drawer") {
+    try { history.back(); } catch (e) { }
+  }
 }
+
+// Системная кнопка «назад» (Android, VK): сначала закрываем окно, а не приложение
+window.__vkBack = function () {
+  if (!document.getElementById("modal").hidden) { closeModal(true); return true; }
+  if (document.getElementById("drawer")) { closeDrawer(true); return true; }
+  return false;
+};
+window.addEventListener("popstate", function () {
+  if (!document.getElementById("modal").hidden) closeModal(true);
+  if (document.getElementById("drawer")) closeDrawer(true);
+});
+window.render = function (keep) { try { render(keep); } catch (e) { } };
 
 MQ.addEventListener("change", () => { closeDrawer(); render(true); });
 
@@ -4817,6 +4841,80 @@ render();
       document.documentElement.classList.add("embedded");
     } catch (e) { }
   }
+})();
+
+</script>
+<script>
+/* VK Mini App: подключаем VK Bridge, инициализируем приложение и учитываем
+   особенности webview ВКонтакте. Если приложение открыли в обычном браузере —
+   ничего не происходит: внешний скрипт не грузится, лишних запросов нет. */
+(function () {
+  "use strict";
+
+  var q = new URLSearchParams(location.search);
+  var inVK = q.has("vk_app_id") || q.has("vk_user_id") || q.has("vk_platform");
+  var inFrame = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+
+  // Внутри ВК и Telegram страница живёт в webview: сообщаем CSS, что мы во фрейме
+  if (inFrame || inVK) document.documentElement.classList.add("embedded");
+
+  // Локальные адреса и файл с диска ВК не откроет, но защищаемся от случайной загрузки
+  if (!inVK || !/^https?:$/.test(location.protocol)) {
+    // всё равно сообщим ВК, что мы живы, если он нас запустил без параметров
+    if (!inFrame) return;
+  }
+
+  function loadBridge(done) {
+    if (window.vkBridge) return done();
+    var s = document.createElement("script");
+    s.src = "https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js";
+    s.async = true;
+    s.onload = done;
+    s.onerror = function () { /* без моста приложение продолжает работать */ };
+    document.head.appendChild(s);
+  }
+
+  function applyTheme(cfg) {
+    // ВК отдаёт цвета темы в webview: подстраиваем фон страницы под светлую/тёмную тему
+    try {
+      var scheme = (cfg && cfg.scheme) || "bright_light";
+      var root = document.documentElement;
+      root.dataset.vkScheme = scheme;
+      if (scheme === "space_gray" || scheme === "vkcom_dark") {
+        root.classList.add("vk-dark");
+      } else {
+        root.classList.remove("vk-dark");
+      }
+    } catch (e) { }
+  }
+
+  loadBridge(function () {
+    if (!window.vkBridge) return;
+    var vk = window.vkBridge;
+    try {
+      vk.send("VKWebAppInit", {}).catch(function () { });
+      // тема ВК (светлая/тёмная) — чтобы фон не резал глаз
+      vk.subscribe(function (e) {
+        if (e && e.detail && e.detail.type === "VKWebAppUpdateConfig") applyTheme(e.detail.data);
+        // возврат в приложение из другого окна — перерисовываем, если данные появились
+        if (e && e.detail && e.detail.type === "VKWebAppViewRestore") {
+          try { if (window.render) window.render(true); } catch (err) { }
+        }
+      });
+      // сообщаем ВК, что можно показать кнопку «назад» в шапке
+      vk.send("VKWebAppSetViewSettings", {
+        status_bar_style: "dark",
+        action_bar_color: "#f3f1ec",
+        navigation_bar_color: "#f3f1ec"
+      }).catch(function () { });
+    } catch (e) { }
+  });
+
+  // Аппаратная кнопка «назад» в Android-webview: сначала закрываем шторку/модалку,
+  // а не выходим из приложения. Работает и в обычном браузере на телефоне.
+  window.addEventListener("popstate", function () {
+    try { if (window.__vkBack) window.__vkBack(); } catch (e) { }
+  });
 })();
 
 </script>

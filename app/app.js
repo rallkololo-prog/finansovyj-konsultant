@@ -1166,7 +1166,9 @@ function pageImprove() {
   const trend = b.brand_trend.filter(r => r.delta > 0).slice(0, 5);
   const subs = b.recurring.slice(0, 6);
   const an = b.anomalies.slice(0, 6);
-  const y2026 = F.years["2026"], y2025 = F.years["2025"];
+  const YR = F.years || {};
+  const y2026 = YR["2026"] || YR[Object.keys(YR).sort().pop()] || { spend: 0, cnt: 0 };
+  const y2025 = YR["2025"] || { spend: 0, cnt: 0 };
 
   return `
   ${shortPeriod() ? note(`Выбран период всего ${DAYS()} ${DAYS() === 1 ? "день" : "дня"}. Для выводов о привычках этого мало:
@@ -1188,7 +1190,7 @@ function pageImprove() {
       Это математический расчёт: суммы берутся из ваших фактических операций, но никто не гарантирует,
       что сократить расходы удастся ровно на столько. Одна и та же операция не учитывается в двух рекомендациях.
       ${stoppedRecs.length ? `<br><br><b style="color:#dfe9e4">Ставки исключены из потенциала:</b> вы отметили, что больше не играете
-      (последнее списание ${lastBetDate()}), поэтому ${stoppedRecs.map(r => money(r.save_year)).join(", ")} в год сюда не входят —
+      (${lastBetDate() ? "последнее списание " + lastBetDate() : "ставок в выписке нет"}), поэтому ${stoppedRecs.map(r => money(r.save_year)).join(", ")} в год сюда не входят —
       экономить на том, что уже прекратилось, нельзя.` : ""}
     </div>
   </div>
@@ -2118,8 +2120,14 @@ function openModal(title, sub, bodyHtml) {
   document.getElementById("modalSub").textContent = sub || "";
   document.getElementById("modalBody").innerHTML = bodyHtml;
   document.getElementById("modal").hidden = false;
+  try { history.pushState({ ui: "modal" }, ""); } catch (e) { }
 }
-function closeModal() { document.getElementById("modal").hidden = true; }
+function closeModal(fromHistory) {
+  document.getElementById("modal").hidden = true;
+  if (!fromHistory && history.state && history.state.ui === "modal") {
+    try { history.back(); } catch (e) { }
+  }
+}
 
 function idsForCat(cat) {
   return F.tx.map((t, i) => i).filter(i => M.categories[F.tx[i][5]] === cat && F.tx[i][3] < 0);
@@ -2551,6 +2559,7 @@ function openDrawer() {
     d.id = "drawer";
     d.className = "drawer";
     document.body.appendChild(d);
+    try { history.pushState({ ui: "drawer" }, ""); } catch (e) { }
   }
   const badges = (typeof navBadges === "function" ? navBadges() : {}) || {};
   d.innerHTML = `
@@ -2567,11 +2576,26 @@ function openDrawer() {
   document.body.classList.add("drawer-open");
 }
 
-function closeDrawer() {
+function closeDrawer(fromHistory) {
   const d = document.getElementById("drawer");
   if (d) d.remove();
   document.body.classList.remove("drawer-open");
+  if (!fromHistory && history.state && history.state.ui === "drawer") {
+    try { history.back(); } catch (e) { }
+  }
 }
+
+// Системная кнопка «назад» (Android, VK): сначала закрываем окно, а не приложение
+window.__vkBack = function () {
+  if (!document.getElementById("modal").hidden) { closeModal(true); return true; }
+  if (document.getElementById("drawer")) { closeDrawer(true); return true; }
+  return false;
+};
+window.addEventListener("popstate", function () {
+  if (!document.getElementById("modal").hidden) closeModal(true);
+  if (document.getElementById("drawer")) closeDrawer(true);
+});
+window.render = function (keep) { try { render(keep); } catch (e) { } };
 
 MQ.addEventListener("change", () => { closeDrawer(); render(true); });
 
