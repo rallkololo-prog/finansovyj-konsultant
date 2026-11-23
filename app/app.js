@@ -2640,7 +2640,7 @@ function pageHelp() {
 
   <div class="section">
     <div class="section-head"><h2>Где взять файл выписки</h2>
-      <div class="hint">поддерживаются Т-Банк и Сбер; другие банки пока нет</div></div>
+      <div class="hint">поддерживаются Т-Банк и Сбер; другие банки — скоро</div></div>
     <div class="two-col">
       ${bankCard("Т-Банк", "#ffdd2d", [
         `Откройте приложение Т-Банка и войдите в свой аккаунт.`,
