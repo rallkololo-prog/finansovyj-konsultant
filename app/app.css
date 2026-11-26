@@ -465,3 +465,15 @@ html, body { overflow-x: hidden; }
 .shell { max-width: 100%; }
 /* таблицы в карточках скроллятся внутри карточки, а не растягивают страницу */
 .card:has(> table), .card:has(> .table-wrap) { overflow-x: auto; }
+
+/* --- средние экраны (ноутбук, iframe ВК ~900 px): таблицы не сжимаются в кашу --- */
+@media (max-width: 1100px) {
+  .main { padding: 18px 16px 28px; }
+  .card:has(> table) table { width: max-content; min-width: 100%; }
+  .card table th, .card table td { padding: 9px 10px; font-size: 12.5px; }
+  .card table td:not(:first-child) { white-space: nowrap; }
+  .card table td:first-child { white-space: nowrap; }
+  .card table td:first-child .t-small { display: none; }
+  .card table td .t-small, .card table td small { font-size: 11px; }
+  .unk-row { grid-template-columns: 104px 1fr; }
+}
