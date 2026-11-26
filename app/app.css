@@ -459,3 +459,9 @@ html.embedded body{padding-bottom:0}
 .consent-x{flex:1}
 .consent .btn{white-space:nowrap}
 @media (max-width:720px){ .consent{bottom:calc(72px + env(safe-area-inset-bottom));flex-direction:column;align-items:stretch;gap:10px} }
+
+/* --- защита от горизонтальной прокрутки в узких webview (ВК, Telegram) --- */
+html, body { overflow-x: hidden; }
+.shell { max-width: 100%; }
+/* таблицы в карточках скроллятся внутри карточки, а не растягивают страницу */
+.card:has(> table), .card:has(> .table-wrap) { overflow-x: auto; }
